@@ -1,0 +1,67 @@
+#-Basic info----------------------------------------------------------------------------------------
+display_name: seqsero
+name: seqsero__v0_0_1
+version:
+  schema: ["v2_1_0"]
+  code: v0_0_1
+#---------------------------------------------------------------------------------------------------
+
+#-Details-------------------------------------------------------------------------------------------
+details:
+  target: [sample]
+  description: >
+    Predicts serotype of salmonella samples using SeqSero v1.
+#---------------------------------------------------------------------------------------------------
+
+#-Install-------------------------------------------------------------------------------------------
+install:
+  path: # Set by install program
+  dockerfile: docker://ssidk/bifrost_seqsero
+# None
+#---------------------------------------------------------------------------------------------------
+
+#-Category info-------------------------------------------------------------------------------------
+category: [serotype]
+#---------------------------------------------------------------------------------------------------
+
+#-Options-------------------------------------------------------------------------------------------
+#options:
+#  min_num_reads: 10000
+#---------------------------------------------------------------------------------------------------
+
+#-Required resource files---------------------------------------------------------------------------
+#resources:
+#  adapters_fasta: "/bifrost/components/bifrost_min_read_check/resources/adapters.fasta"
+#---------------------------------------------------------------------------------------------------
+
+#-Requirements to run component---------------------------------------------------------------------
+requirements:
+  sample:
+    categories:
+      paired_reads:
+        summary:
+          data:
+    properties:
+      provided_species: Salmonella enterica
+  components:
+    analyzer:
+      status:
+#---------------------------------------------------------------------------------------------------
+
+#-DB Value changes (excluding component output)-----------------------------------------------------
+# db_values_changes:
+#   files: []
+#   sample:
+#     categories:
+#       size_check:
+#         summary:  # see sample_component summary
+#         component:
+#           _id: 
+#           date:  # ObjectId
+#     report:
+#   sample_component:
+#     summary:
+#       has_min_num_of_reads:  # Boolean
+#     results:
+#       min_read_check/data_yaml: {}
+#---------------------------------------------------------------------------------------------------
