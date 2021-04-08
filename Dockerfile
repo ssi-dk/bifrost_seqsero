@@ -18,7 +18,10 @@ ONBUILD LABEL \
     environment="${BUILD_ENV}" \
     maintainer="${MAINTAINER}"
 ONBUILD RUN \
-    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1;
+    conda install -yq -c conda-forge -c bioconda -c default snakemake-minimal==5.7.1; \
+    wget https://github.com/denglab/SeqSero/archive/v1.0.1.tar.gz && \
+    tar zfx v1.0.1.tar.gz && rm v1.0.1.tar.gz;
+ENV PATH="$PATH:/SeqSero-1.0.1"
 
 #---------------------------------------------------------------------------------------------------
 # Base for dev environement

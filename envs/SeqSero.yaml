@@ -3,6 +3,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - gcc_linux-64
   - blast=2.10.1=pl526he19e7b1_3
   - bwa=0.7.17=hed695b0_7
   - entrez-direct=13.9=pl526h375a9b1_1
@@ -99,6 +100,6 @@ dependencies:
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
   - pip:
-    - biopython==1.65
     - numpy==1.16.6
+    - biopython==1.65
 

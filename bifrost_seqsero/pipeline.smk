@@ -93,7 +93,7 @@ rule run_seqsero:
 #    params:
 #        adapters = component['resources']['adapters_fasta']  # This is now done to the root of the continuum container
     conda:
-        "envs/SeqSero.yaml"
+        "../envs/SeqSero.yaml"
     shell:
         "SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
 
