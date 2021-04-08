@@ -2,12 +2,13 @@ from bifrostlib import common
 from bifrostlib.datahandling import Sample
 from bifrostlib.datahandling import SampleComponentReference
 from bifrostlib.datahandling import SampleComponent
+from bifrostlib.datahandling import Component
 from bifrostlib.datahandling import Category
 from typing import Dict
 import os
 
 def split_and_store_result(line: str, results: Dict):
-    results[line.split(":",2)[0]] = line.split(":",2)[1].strip()
+    results[line.split(":",1)[0]] = line.split(":",1)[1].strip()
 
 def extract_serotype_results(serotype: Category, results: Dict, component_name: str) -> None:
     file_name = "serotype.txt"
