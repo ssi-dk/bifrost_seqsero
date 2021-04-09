@@ -30,7 +30,7 @@ jobs:
         build_args: BUILD_ENV=test,CODE_VERSION=${{ env.CODE_VERSION }}
     - name: Build and push Docker images (to latest)
       id: buildmaster
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v1.1.0
       with:
         username: ${{ secrets.DOCKER_USERNAME }} # optional
@@ -40,7 +40,7 @@ jobs:
         build_args: CODE_VERSION=${{ env.CODE_VERSION }}
     - name: Tag commit
       uses: tvdias/github-tagger@v0.0.1
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         tag: ${{ env.CODE_VERSION }}
