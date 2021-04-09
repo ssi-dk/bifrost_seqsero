@@ -1,6 +1,6 @@
 # This is intended to run in Local Development (dev) and Github Actions (test/prod)
 # BUILD_ENV options (dev, test, prod) dev for local testing and test for github actions testing on prod ready code
-ARG BUILD_ENV="dev"
+ARG BUILD_ENV="prod"
 ARG MAINTAINER="krki@ssi.dk;"
 ARG BIFROST_COMPONENT_NAME="bifrost_seqsero"
 ARG FORCE_DOWNLOAD=true
