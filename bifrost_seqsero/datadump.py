@@ -33,8 +33,18 @@ def extract_serotype_results(serotype: Category, results: Dict, component_name: 
         else:
             results["comment"] = line.strip()
 
-    serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
-    serotype["summary"]["antigenic profile"] = results["Predicted antigenic profile"]
+
+    if serotype["summary"]["serotype"] == '':
+        serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
+    elif serotype["summary"]["serotype"] != results["Predicted serotype(s)"]:
+        serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
+        serotype["summary"]["status"] = "Ambiguous"
+    elif serotype["summary"]["serotype"] == results["Predicted serotype(s)"] and serotype["summary"]["status"] != "Ambiguous":
+        serotype["summary"]["status"] = "Concordant"
+
+    serotype["summary"]["antigenic_profile"] = results["Predicted antigenic profile"]
+    serotype["report"]["seqsero_serotype"] = results["Predicted serotype(s)"]
+    serotype["report"]["seqsero_antigenic_profile"] = results["Predicted antigenic profile"]
 
 def datadump(samplecomponent_ref_json: Dict):
     samplecomponent_ref = SampleComponentReference(value=samplecomponent_ref_json)
@@ -50,6 +60,7 @@ def datadump(samplecomponent_ref_json: Dict):
             "summary": {
                 "serotype": "",
                 "antigenic profile": "",
+                "status": "",
             },
             "report": {}
         })
