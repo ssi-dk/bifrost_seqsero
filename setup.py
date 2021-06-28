@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bifrost_seqsero',
-    version='v1_0_0__',
+    version='v1_0_1__',
     description='SeqSero component for salmonella serotyping',
     url='https://github.com/ssi-dk/bifrost_seqsero',
     author="Kristoffer Kiil",
