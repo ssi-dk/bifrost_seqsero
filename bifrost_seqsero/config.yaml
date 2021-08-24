@@ -41,9 +41,8 @@ requirements:
       paired_reads:
         summary:
           data:
-      species_detection:
-        summary:
-          species: Salmonella enterica
+    properties:
+      provided_species: Salmonella enterica
   components:
     analyzer:
       status:

@@ -59,7 +59,7 @@ def datadump(samplecomponent_ref_json: Dict):
             "component": samplecomponent.component,
             "summary": {
                 "serotype": "",
-                "antigenic profile": "",
+                "antigenic_profile": "",
                 "status": "",
             },
             "report": {}

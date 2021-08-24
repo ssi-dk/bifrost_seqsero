@@ -89,4 +89,13 @@ class TestBifrostSeqSero:
         shutil.rmtree(self.test_dir)
         assert not os.path.isdir(f"{self.test_dir}/{self.component_name}")
 
-
+    def test_dbcontent(self):
+        client = pymongo.MongoClient(os.environ['BIFROST_DB_KEY'])
+        db = client.get_database()
+        col = db["samples"]
+        output = col.find_one({"name":"SRR2094561"})
+        assert output["categories"]["serotype"]["summary"]["serotype"] == "Enteritidis"
+        assert output["categories"]["serotype"]["summary"]["antigenic_profile"] == "9:g,m:-"
+        assert output["categories"]["serotype"]["summary"]["status"] == ""
+        assert output["categories"]["serotype"]["report"]["seqsero_serotype"] == "Enteritidis"
+        assert output["categories"]["serotype"]["report"]["seqsero_antigenic_profile"] == "9:g,m:-"
