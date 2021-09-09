@@ -41,8 +41,9 @@ requirements:
       paired_reads:
         summary:
           data:
-    properties:
-      provided_species: Salmonella enterica
+      sample_info:
+        summary:
+          provided_species: Salmonella enterica
   components:
     analyzer:
       status:

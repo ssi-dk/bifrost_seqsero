@@ -35,10 +35,12 @@ class TestBifrostSeqSero:
                         "data": ["/bifrost/test_data/samples/SRR2094561_1.fastq.gz",
                                  "/bifrost/test_data/samples/SRR2094561_2.fastq.gz"]
                     }
+                },
+                "sample_info": {
+                    "summary": {
+                        "provided_species": "Salmonella enterica"
+                    }
                 }
-            },
-            "properties": {
-                "provided_species": "Salmonella enterica"
             }
         }
     ]
