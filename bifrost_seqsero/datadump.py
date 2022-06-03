@@ -34,6 +34,17 @@ def extract_serotype_results(serotype: Category, results: Dict, component_name: 
             results["comment"] = line.strip()
 
 
+    # if len(serotype["summary"]["serotype"]) == 0:
+    #     serotype["summary"]["serotype"] += "seqsero:" + results["Predicted serotype(s)"]
+    #     serotype["summary"]["antigenic_profile"] += "seqsero:" + results["Predicted serotype(s)"]  
+    # else:
+    #     serotype_set = set(serotype["summary"]["serotype"].split(","))
+    #     if len(serotype_set) == 1 and results["Predicted serotype(s)"] in serotype_set:
+    #         serotype["summary"]["status"] = "Concordant"
+    #     else:
+    #         serotype["summary"]["status"] = "Ambiguous"
+    #     serotype["summary"]["serotype"] += ",seqsero:" + results["Predicted serotype(s)"]
+    #     serotype["summary"]["antigenic_profile"] += ",seqsero:" + results["Predicted antigenic profile"]
     if serotype["summary"]["serotype"] == '':
         serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
     elif serotype["summary"]["serotype"] != results["Predicted serotype(s)"]:
@@ -52,7 +63,7 @@ def datadump(samplecomponent_ref_json: Dict):
     sample = Sample.load(samplecomponent.sample)
     component = Component.load(samplecomponent.component)
     
-    serotype = samplecomponent.get_category("serotype")
+    serotype = sample.get_category("serotype")
     if serotype is None:
         serotype = Category(value={
             "name": "serotype",
