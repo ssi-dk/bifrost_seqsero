@@ -44,6 +44,7 @@ ONBUILD ARG BIFROST_COMPONENT_NAME
 ONBUILD WORKDIR /bifrost/components/${BIFROST_COMPONENT_NAME}
 ONBUILD COPY ./ ./
 ONBUILD RUN \
+    pip install -r requirements.txt \
     pip install -e file:///bifrost/components/${BIFROST_COMPONENT_NAME}/
 
 #---------------------------------------------------------------------------------------------------
@@ -71,4 +72,4 @@ ARG BIFROST_COMPONENT_NAME
 #---------------------------------------------------------------------------------------------------
 WORKDIR /bifrost/components/${BIFROST_COMPONENT_NAME}
 ENTRYPOINT ["python3", "-m", "bifrost_seqsero"]
-CMD ["python3", "-m", "bifrost_seqsero", "--help"]
+CMD ["--help"]
