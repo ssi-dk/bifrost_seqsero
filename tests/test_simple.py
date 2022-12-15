@@ -21,7 +21,7 @@ def test_connection():
     assert "TEST" in os.environ['BIFROST_DB_KEY'].upper()  # A very basic piece of protection ensuring the word test is in the DB
 
 class TestBifrostSeqSero:
-    component_name = "seqsero__v1_0_5__"
+    component_name = "seqsero__v1_0_6__"
     current_dir = os.getcwd()
     test_dir = "/bifrost/test_data/output/test__seqsero/"
     json_entries = [
