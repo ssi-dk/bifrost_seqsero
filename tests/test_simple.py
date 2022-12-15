@@ -40,6 +40,11 @@ class TestBifrostSeqSero:
                     "summary": {
                         "provided_species": "Salmonella enterica"
                     }
+                },
+                "species_detection": {
+                    "summary": {
+                        "species": "Salmonella enterica"
+                    }
                 }
             }
         }

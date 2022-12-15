@@ -65,6 +65,9 @@ ONBUILD RUN \
 #---------------------------------------------------------------------------------------------------
 FROM build_${BUILD_ENV}
 ARG BIFROST_COMPONENT_NAME
+WORKDIR /bifrost/components/${BIFROST_COMPONENT_NAME}
+RUN \
+    snakemake --use-conda --config build_env=True --create-envs-only --snakefile ${BIFROST_COMPONENT_NAME}/conda.smk
 # NA
 
 #---------------------------------------------------------------------------------------------------
