@@ -13,6 +13,10 @@ from bifrost_seqsero import launcher
 import pymongo
 import os
 import shutil
+from pathlib import Path
+
+bifrost_install_dir = os.environ['BIFROST_INSTALL_DIR']
+bifrost_config_and_data_path = Path(f"{bifrost_install_dir}/bifrost/test_data")
 
 
 @pytest.fixture
@@ -21,7 +25,7 @@ def test_connection():
     assert "TEST" in os.environ['BIFROST_DB_KEY'].upper()  # A very basic piece of protection ensuring the word test is in the DB
 
 class TestBifrostSeqSero:
-    component_name = "seqsero__v1_0_7__"
+    component_name = "seqsero__v1.0.7"
     current_dir = os.getcwd()
     test_dir = "/bifrost/test_data/output/test__seqsero/"
     json_entries = [

@@ -30,11 +30,16 @@ except Exception as error:
     print(traceback.format_exc(), file=sys.stderr)
     raise Exception("failed to set sample, component and/or samplecomponent")
 
+
 onerror:
     if not samplecomponent.has_requirements():
         common.set_status_and_save(sample, samplecomponent, "Requirements not met")
     if samplecomponent['status'] == "Running":
         common.set_status_and_save(sample, samplecomponent, "Failure")
+
+envvars:
+    "BIFROST_INSTALL_DIR",
+    "CONDA_PREFIX"
 
 rule all:
     input:
