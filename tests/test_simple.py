@@ -1,22 +1,14 @@
-from argparse import Namespace
-import pytest
-from bifrostlib import common
-from bifrostlib import datahandling
-from bifrostlib import database_interface
-from bifrostlib.datahandling import ComponentReference
-from bifrostlib.datahandling import Component
-from bifrostlib.datahandling import SampleReference
-from bifrostlib.datahandling import Sample
-from bifrostlib.datahandling import RunReference
-from bifrostlib.datahandling import Run
-from bifrost_seqsero import launcher
-import pymongo
 import os
 import shutil
+from argparse import Namespace
 from pathlib import Path
 
-bifrost_install_dir = os.environ['BIFROST_INSTALL_DIR']
-bifrost_config_and_data_path = Path(f"{bifrost_install_dir}/bifrost/test_data")
+import pymongo
+import pytest
+from bifrost_seqsero import launcher
+from bifrostlib import common, database_interface, datahandling
+from bifrostlib.datahandling import (Component, ComponentReference, Run,
+                                     RunReference, Sample, SampleReference)
 
 
 @pytest.fixture
@@ -26,8 +18,12 @@ def test_connection():
 
 class TestBifrostSeqSero:
     component_name = "seqsero__v1.1.1"
+    bifrost_install_dir = Path(os.environ['BIFROST_INSTALL_DIR'])
+    bifrost_config_and_data_path = Path(f"{bifrost_install_dir}/bifrost/test_data")
     current_dir = os.getcwd()
-    test_dir = "/bifrost/test_data/output/test__seqsero/"
+    test_dir = bifrost_config_and_data_path/"output/test__seqsero/"
+    r1=str(bifrost_config_and_data_path/"samples/SRR2094561_1.fastq.gz")
+    r2=str(bifrost_config_and_data_path/"samples/SRR2094561_2.fastq.gz")
     json_entries = [
         {
             "_id": {"$oid": "000000000000000000000001"}, 
@@ -36,8 +32,7 @@ class TestBifrostSeqSero:
             "categories": {
                 "paired_reads": {
                     "summary": {
-                        "data": ["/bifrost/test_data/samples/SRR2094561_1.fastq.gz",
-                                 "/bifrost/test_data/samples/SRR2094561_2.fastq.gz"]
+                        "data": [r1, r2]
                     }
                 },
                 "sample_info": {
@@ -93,7 +88,7 @@ class TestBifrostSeqSero:
         os.mkdir(self.test_dir)
         test_args = [
             "--sample_name", "SRR2094561",
-            "--outdir", self.test_dir
+            "--outdir", str(self.test_dir)
         ]
         launcher.main(args=test_args)
         assert os.path.isfile(f"{self.test_dir}/{self.component_name}/datadump_complete")
