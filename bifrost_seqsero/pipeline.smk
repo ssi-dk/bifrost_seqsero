@@ -98,7 +98,7 @@ rule run_seqsero:
 #    params:
 #        adapters = component['resources']['adapters_fasta']  # This is now done to the root of the continuum container
     conda:
-        "../envs/SeqSero.yaml"
+        "bifrost_SeqSero"
     shell:
         os.environ['BIFROST_INSTALL_DIR'] + "/bifrost/components/bifrost_seqsero/SeqSero-1.0.1/SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
 
