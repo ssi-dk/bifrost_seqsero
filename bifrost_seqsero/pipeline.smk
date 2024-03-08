@@ -30,7 +30,6 @@ except Exception as error:
     print(traceback.format_exc(), file=sys.stderr)
     raise Exception("failed to set sample, component and/or samplecomponent")
 
-
 onerror:
     if not samplecomponent.has_requirements():
         common.set_status_and_save(sample, samplecomponent, "Requirements not met")
@@ -40,6 +39,7 @@ onerror:
 envvars:
     "BIFROST_INSTALL_DIR",
     "CONDA_PREFIX"
+
 
 rule all:
     input:
@@ -100,7 +100,7 @@ rule run_seqsero:
     conda:
         "../envs/SeqSero.yaml"
     shell:
-        "SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
+        os.environ['BIFROST_INSTALL_DIR'] + "/bifrost/components/bifrost_seqsero/SeqSero-1.0.1/SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
 
 #* Dynamic section: end ****************************************************************************
 
