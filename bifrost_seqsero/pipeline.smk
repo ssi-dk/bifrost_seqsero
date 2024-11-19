@@ -38,7 +38,8 @@ onerror:
 
 envvars:
     "BIFROST_INSTALL_DIR",
-    "CONDA_PREFIX"
+    "CONDA_PREFIX",
+    "BIFROST_STAGE"
 
 
 rule all:
@@ -98,7 +99,7 @@ rule run_seqsero:
 #    params:
 #        adapters = component['resources']['adapters_fasta']  # This is now done to the root of the continuum container
     conda:
-        "bifrost_SeqSero"
+        f"bifrost_{os.environ['BIFROST_STAGE']}_SeqSero"
     shell:
         os.environ['BIFROST_INSTALL_DIR'] + "/bifrost/components/bifrost_seqsero/SeqSero-1.0.1/SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
 
