@@ -14,7 +14,7 @@ def extract_serotype_results(serotype: Category, results: Dict, component_name: 
     file_name = "serotype.txt"
     file_key = common.json_key_cleaner(file_name)
     file_path = os.path.join(component_name, file_name)
-
+    # Kør og opdater så vi fanger det rigtigt med Seqsero2
     for line in open(file_path,'r'):
         if line.startswith("Input files"):
             split_and_store_result(line, results)

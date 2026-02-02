@@ -93,15 +93,18 @@ rule run_seqsero:
         f"{component['name']}/benchmarks/{rule_name}.benchmark"
     input:
         rules.check_requirements.output.check_file,
-        reads = sample['categories']['paired_reads']['summary']['data']
+        assembly = sample['categories']['contigs']['summary']['data']
     output:
-        _file = f"{component['name']}/serotype.txt"
+#        _file = f"{component['name']}/serotype.txt"
+        outdir = directory(f"{component['name']}")
 #    params:
+        name = f"{sample['name']}"
 #        adapters = component['resources']['adapters_fasta']  # This is now done to the root of the continuum container
     conda:
         f"bifrost_{os.environ['BIFROST_STAGE']}_SeqSero"
+    threads: 8
     shell:
-        os.environ['BIFROST_INSTALL_DIR'] + "/bifrost/components/bifrost_seqsero/SeqSero-1.0.1/SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
+        "SeqSero2_package.py -m k -t 2 -b mem -i {input.assembly} -d {output.outdir} -n {params.name} -p {threads}"
 
 #* Dynamic section: end ****************************************************************************
 

@@ -38,7 +38,7 @@ category: [serotype]
 requirements:
   sample:
     categories:
-      paired_reads:
+      contigs:
         summary:
           data:
       species_detection:
