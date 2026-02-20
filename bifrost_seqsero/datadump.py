@@ -11,10 +11,9 @@ def split_and_store_result(line: str, results: Dict):
     results[line.split(":",1)[0]] = line.split(":",1)[1].strip()
 
 def extract_serotype_results(serotype: Category, results: Dict, component_name: str) -> None:
-    file_name = "serotype.txt"
-    file_key = common.json_key_cleaner(file_name)
+    file_name = "SeqSero_result.txt"
     file_path = os.path.join(component_name, file_name)
-    # Kør og opdater så vi fanger det rigtigt med Seqsero2
+
     for line in open(file_path,'r'):
         if line.startswith("Input files"):
             split_and_store_result(line, results)
@@ -33,18 +32,6 @@ def extract_serotype_results(serotype: Category, results: Dict, component_name: 
         else:
             results["comment"] = line.strip()
 
-
-    # if len(serotype["summary"]["serotype"]) == 0:
-    #     serotype["summary"]["serotype"] += "seqsero:" + results["Predicted serotype(s)"]
-    #     serotype["summary"]["antigenic_profile"] += "seqsero:" + results["Predicted serotype(s)"]  
-    # else:
-    #     serotype_set = set(serotype["summary"]["serotype"].split(","))
-    #     if len(serotype_set) == 1 and results["Predicted serotype(s)"] in serotype_set:
-    #         serotype["summary"]["status"] = "Concordant"
-    #     else:
-    #         serotype["summary"]["status"] = "Ambiguous"
-    #     serotype["summary"]["serotype"] += ",seqsero:" + results["Predicted serotype(s)"]
-    #     serotype["summary"]["antigenic_profile"] += ",seqsero:" + results["Predicted antigenic profile"]
     if serotype["summary"]["serotype"] == '':
         serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
     elif serotype["summary"]["serotype"] != results["Predicted serotype(s)"]:
@@ -57,8 +44,9 @@ def extract_serotype_results(serotype: Category, results: Dict, component_name: 
     serotype["report"]["seqsero_serotype"] = results["Predicted serotype(s)"]
     serotype["report"]["seqsero_antigenic_profile"] = results["Predicted antigenic profile"]
 
-def datadump(samplecomponent_ref_json: Dict):
-    samplecomponent_ref = SampleComponentReference(value=samplecomponent_ref_json)
+def datadump(samplecomponent_id: str):
+    #samplecomponent_ref = SampleComponentReference(value=samplecomponent_ref_json)
+    samplecomponent_ref = SampleComponentReference(_id=samplecomponent_id)
     samplecomponent = SampleComponent.load(samplecomponent_ref)
     sample = Sample.load(samplecomponent.sample)
     component = Component.load(samplecomponent.component)
@@ -67,7 +55,7 @@ def datadump(samplecomponent_ref_json: Dict):
     if serotype is None:
         serotype = Category(value={
             "name": "serotype",
-            "component": samplecomponent.component,
+            "component": {"id": samplecomponent["component"]["_id"], "name": samplecomponent["component"]["name"]},
             "summary": {
                 "serotype": "",
                 "antigenic_profile": "",
