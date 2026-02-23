@@ -117,7 +117,7 @@ rule datadump:
     output:
         complete = rules.all.input
     params:
-        samplecomponent_ref_json = samplecomponent.to_reference().json
+        samplecomponent_id = samplecomponent["_id"]
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
 
