@@ -31,7 +31,9 @@ except Exception as error:
     raise Exception("failed to set sample, component and/or samplecomponent")
 
 onerror:
-    if samplecomponent['status'] == "Running":
+    if not samplecomponent.has_requirements():
+        common.set_status_and_save(sample, samplecomponent, "Requirements not met")
+    if samplecomponent["status"] == "Running":
         common.set_status_and_save(sample, samplecomponent, "Failure")
 
 envvars:
@@ -49,10 +51,29 @@ rule all:
 
 rule setup:
     output:
-        init_file = touch(temp(f"{component['name']}/initialized")),
+        init_file = touch(f"{component['name']}/initialized"),
     run:
         samplecomponent['path'] = os.path.join(os.getcwd(), component['name'])
         samplecomponent.save()
+
+rule_name = "check_requirements"
+rule check_requirements:
+    message:
+        f"Running step:{rule_name}"
+    log:
+        out_file = f"{component['name']}/log/{rule_name}.out.log",
+        err_file = f"{component['name']}/log/{rule_name}.err.log",
+    benchmark:
+        f"{component['name']}/benchmarks/{rule_name}.benchmark"
+    input:
+        rules.setup.output.init_file
+    output:
+        check_file = touch(f"{component['name']}/requirements_met")
+    run:
+        os.makedirs(os.path.dirname(output.check_file), exist_ok=True)
+        if samplecomponent.has_requirements():
+            # touch file is enough
+            pass
 
 #- Templated section: end --------------------------------------------------------------------------
 
@@ -69,22 +90,18 @@ rule run_sistr:
     benchmark:
         f"{component['name']}/benchmarks/{rule_name}.benchmark"
     input:
+        rules.check_requirements.output.check_file,
         assembly = sample['categories']['contigs']['summary']['data'],
         serovarlist = os.path.join(os.path.dirname(workflow.snakefile), "..", "resources", "serovar-list.txt")
     output:
-        outdir = directory(f"{component['name']}"),
         sistr_tab = f"{component['name']}/sistr_results.tab",
         allele_results = f"{component['name']}/allele_results.tsv",
         gmlst_profile = f"{component['name']}/cgmlst_profiles.tsv",
         threads_file = f"{component['name']}/threads_used.txt",
         tool_version = f"{component['name']}/tool_version.txt"
     threads: 8
-    conda:
-        "RAHCS_env"
     shell:
         r"""
-        mkdir -p {output.outdir}
-
         sistr -f tab --qc \
             -t {threads} \
             -l {input.serovarlist} \
