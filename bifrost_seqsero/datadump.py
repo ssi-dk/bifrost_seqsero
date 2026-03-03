@@ -1,89 +1,82 @@
 from bifrostlib import common
 from bifrostlib.datahandling import Sample
+from bifrostlib.datahandling import Component
 from bifrostlib.datahandling import SampleComponentReference
 from bifrostlib.datahandling import SampleComponent
-from bifrostlib.datahandling import Component
 from bifrostlib.datahandling import Category
-from typing import Dict
 import os
 
-def split_and_store_result(line: str, results: Dict):
-    results[line.split(":",1)[0]] = line.split(":",1)[1].strip()
 
-def extract_serotype_results(serotype: Category, results: Dict, component_name: str) -> None:
-    file_name = "serotype.txt"
-    file_key = common.json_key_cleaner(file_name)
-    file_path = os.path.join(component_name, file_name)
+def parse_sistr_results(component_name: str):
+    file_path = os.path.join(component_name, "sistr_results.tab")
+    with open(file_path) as fh:
+        header = fh.readline().strip().split("\t")
+        values = fh.readline().strip().split("\t")
+        return dict(zip(header, values))
 
-    for line in open(file_path,'r'):
-        if line.startswith("Input files"):
-            split_and_store_result(line, results)
-        elif line.startswith("O antigen prediction"):
-            split_and_store_result(line, results)
-        elif line.startswith("H1 antigen prediction"):
-            split_and_store_result(line, results)
-        elif line.startswith("H2 antigen prediction"):
-            split_and_store_result(line, results)
-        elif line.startswith("Predicted antigenic profile"):
-            split_and_store_result(line, results)
-        elif line.startswith("Sdf prediction"):
-            split_and_store_result(line, results)
-        elif line.startswith("Predicted serotype"):
-            split_and_store_result(line, results)
-        else:
-            results["comment"] = line.strip()
+def extract_sistr_statistics(serotype: Category, results: dict) -> None:
+    """Store all SISTR results inside the summary section only."""
+
+    # Core serotype fields
+    serotype["summary"]["serotype"] = results.get("serovar", "")
+    serotype["summary"]["antigenic_profile"] = results.get("antigenic_formula", "")
+    serotype["summary"]["status"] = results.get("qc_status", "")   # single source of truth
+
+    # Antigen predictions
+    serotype["summary"]["h1"] = results.get("h1", "")
+    serotype["summary"]["h2"] = results.get("h2", "")
+    serotype["summary"]["o_antigen"] = results.get("o_antigen", "")
+    serotype["summary"]["serogroup"] = results.get("serogroup", "")
+
+    # cgMLST fields
+    serotype["summary"]["cgmlst_ST"] = results.get("cgmlst_ST", "")
+    serotype["summary"]["cgmlst_distance"] = results.get("cgmlst_distance", "")
+    serotype["summary"]["cgmlst_found_loci"] = results.get("cgmlst_found_loci", "")
+    serotype["summary"]["serovar_cgmlst"] = results.get("serovar_cgmlst", "")
+
+    # QC messages
+    serotype["summary"]["qc_messages"] = results.get("qc_messages", "")
+
+    # Genome info
+    serotype["summary"]["genome"] = results.get("genome", "")
+    serotype["summary"]["fasta_filepath"] = results.get("fasta_filepath", "")
 
 
-    # if len(serotype["summary"]["serotype"]) == 0:
-    #     serotype["summary"]["serotype"] += "seqsero:" + results["Predicted serotype(s)"]
-    #     serotype["summary"]["antigenic_profile"] += "seqsero:" + results["Predicted serotype(s)"]  
-    # else:
-    #     serotype_set = set(serotype["summary"]["serotype"].split(","))
-    #     if len(serotype_set) == 1 and results["Predicted serotype(s)"] in serotype_set:
-    #         serotype["summary"]["status"] = "Concordant"
-    #     else:
-    #         serotype["summary"]["status"] = "Ambiguous"
-    #     serotype["summary"]["serotype"] += ",seqsero:" + results["Predicted serotype(s)"]
-    #     serotype["summary"]["antigenic_profile"] += ",seqsero:" + results["Predicted antigenic profile"]
-    if serotype["summary"]["serotype"] == '':
-        serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
-    elif serotype["summary"]["serotype"] != results["Predicted serotype(s)"]:
-        serotype["summary"]["serotype"] = results["Predicted serotype(s)"]
-        serotype["summary"]["status"] = "Ambiguous"
-    elif serotype["summary"]["serotype"] == results["Predicted serotype(s)"] and serotype["summary"]["status"] != "Ambiguous":
-        serotype["summary"]["status"] = "Concordant"
-
-    serotype["summary"]["antigenic_profile"] = results["Predicted antigenic profile"]
-    serotype["report"]["seqsero_serotype"] = results["Predicted serotype(s)"]
-    serotype["report"]["seqsero_antigenic_profile"] = results["Predicted antigenic profile"]
-
-def datadump(samplecomponent_ref_json: Dict):
-    samplecomponent_ref = SampleComponentReference(value=samplecomponent_ref_json)
+def datadump(samplecomponent_id: str):
+    samplecomponent_ref = SampleComponentReference(_id=samplecomponent_id)
     samplecomponent = SampleComponent.load(samplecomponent_ref)
     sample = Sample.load(samplecomponent.sample)
     component = Component.load(samplecomponent.component)
-    
-    serotype = sample.get_category("serotype")
+
+    serotype = samplecomponent.get_category("serotype")
     if serotype is None:
         serotype = Category(value={
             "name": "serotype",
-            "component": samplecomponent.component,
+            "component": {
+                "id": samplecomponent["component"]["_id"],
+                "name": samplecomponent["component"]["name"]
+            },
             "summary": {
                 "serotype": "",
                 "antigenic_profile": "",
-                "status": "",
+                "status": ""
             },
             "report": {}
         })
-    extract_serotype_results(serotype, samplecomponent["results"], samplecomponent["component"]["name"])
+
+    results = parse_sistr_results(samplecomponent["component"]["name"])
+    extract_sistr_statistics(serotype, results)
+
     samplecomponent.set_category(serotype)
     sample.set_category(serotype)
+
     samplecomponent.save_files()
     common.set_status_and_save(sample, samplecomponent, "Success")
+
     with open(os.path.join(samplecomponent["component"]["name"], "datadump_complete"), "w+") as fh:
         fh.write("done")
 
 
 datadump(
-    snakemake.params.samplecomponent_ref_json,
+    snakemake.params.samplecomponent_id
 )

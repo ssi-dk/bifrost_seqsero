@@ -14,17 +14,17 @@ os.umask(0o2)
 
 try:
     sample_ref = SampleReference(_id=config.get('sample_id', None), name=config.get('sample_name', None))
-    sample:Sample = Sample.load(sample_ref) # schema 2.1
+    sample:Sample = Sample.load(sample_ref)
     if sample is None:
         raise Exception("invalid sample passed")
     component_ref = ComponentReference(name=config['component_name'])
-    component:Component = Component.load(reference=component_ref) # schema 2.1
+    component:Component = Component.load(reference=component_ref)
     if component is None:
         raise Exception("invalid component passed")
     samplecomponent_ref = SampleComponentReference(name=SampleComponentReference.name_generator(sample.to_reference(), component.to_reference()))
     samplecomponent = SampleComponent.load(samplecomponent_ref)
     if samplecomponent is None:
-        samplecomponent:SampleComponent = SampleComponent(sample_reference=sample.to_reference(), component_reference=component.to_reference()) # schema 2.1
+        samplecomponent:SampleComponent = SampleComponent(sample_reference=sample.to_reference(), component_reference=component.to_reference())
     common.set_status_and_save(sample, samplecomponent, "Running")
 except Exception as error:
     print(traceback.format_exc(), file=sys.stderr)
@@ -33,7 +33,7 @@ except Exception as error:
 onerror:
     if not samplecomponent.has_requirements():
         common.set_status_and_save(sample, samplecomponent, "Requirements not met")
-    if samplecomponent['status'] == "Running":
+    if samplecomponent["status"] == "Running":
         common.set_status_and_save(sample, samplecomponent, "Failure")
 
 envvars:
@@ -44,20 +44,17 @@ envvars:
 
 rule all:
     input:
-        # file is defined by datadump function
         f"{component['name']}/datadump_complete"
     run:
         common.set_status_and_save(sample, samplecomponent, "Success")
 
+
 rule setup:
     output:
-        init_file = touch(temp(f"{component['name']}/initialized")),
-    params:
-        folder = component['name']
+        init_file = touch(f"{component['name']}/initialized"),
     run:
         samplecomponent['path'] = os.path.join(os.getcwd(), component['name'])
         samplecomponent.save()
-
 
 rule_name = "check_requirements"
 rule check_requirements:
@@ -69,21 +66,22 @@ rule check_requirements:
     benchmark:
         f"{component['name']}/benchmarks/{rule_name}.benchmark"
     input:
-        folder = rules.setup.output.init_file,
+        rules.setup.output.init_file
     output:
-        check_file = f"{component['name']}/requirements_met",
-    params:
-        samplecomponent
+        check_file = touch(f"{component['name']}/requirements_met")
     run:
+        os.makedirs(os.path.dirname(output.check_file), exist_ok=True)
         if samplecomponent.has_requirements():
-            with open(output.check_file, "w") as fh:
-                fh.write("")
+            # touch file is enough
+            pass
 
 #- Templated section: end --------------------------------------------------------------------------
 
+
 #* Dynamic section: start **************************************************************************
-rule_name = "run_seqsero"
-rule run_seqsero:
+
+rule_name = "run_sistr"
+rule run_sistr:
     message:
         f"Running step:{rule_name}"
     log:
@@ -93,19 +91,35 @@ rule run_seqsero:
         f"{component['name']}/benchmarks/{rule_name}.benchmark"
     input:
         rules.check_requirements.output.check_file,
-        reads = sample['categories']['paired_reads']['summary']['data']
+        assembly = sample['categories']['contigs']['summary']['data'],
+        serovarlist = os.path.join(os.path.dirname(workflow.snakefile), "..", "resources", "serovar-list.txt")
     output:
-        _file = f"{component['name']}/serotype.txt"
-#    params:
-#        adapters = component['resources']['adapters_fasta']  # This is now done to the root of the continuum container
-    conda:
-        f"bifrost_{os.environ['BIFROST_STAGE']}_SeqSero"
+        sistr_tab = f"{component['name']}/sistr_results.tab",
+        allele_results = f"{component['name']}/allele_results.tsv",
+        gmlst_profile = f"{component['name']}/cgmlst_profiles.tsv",
+        threads_file = f"{component['name']}/threads_used.txt",
+        tool_version = f"{component['name']}/tool_version.txt"
+    threads: 8
     shell:
-        os.environ['BIFROST_INSTALL_DIR'] + "/bifrost/components/bifrost_seqsero/SeqSero-1.0.1/SeqSero.py -m 2 -i {input.reads[0]} {input.reads[1]} > {output._file}"
+        r"""
+        sistr -f tab --qc \
+            -t {threads} \
+            -l {input.serovarlist} \
+            --cgmlst-profiles {output.gmlst_profile} \
+            --alleles-output {output.allele_results} \
+            --output-prediction {output.sistr_tab} \
+            {input.assembly} \
+            1> {log.out_file} 2> {log.err_file}
+
+        sistr --version > {output.tool_version} 2>&1
+        echo {threads} > {output.threads_file}
+        """
 
 #* Dynamic section: end ****************************************************************************
 
+
 #- Templated section: start ------------------------------------------------------------------------
+
 rule_name = "datadump"
 rule datadump:
     message:
@@ -116,13 +130,13 @@ rule datadump:
     benchmark:
         f"{component['name']}/benchmarks/{rule_name}.benchmark"
     input:
-        #* Dynamic section: start ******************************************************************
-        rules.run_seqsero.output._file  # Needs to be output of final rule
-        #* Dynamic section: end ********************************************************************
+        rules.run_sistr.output.sistr_tab
     output:
         complete = rules.all.input
     params:
-        samplecomponent_ref_json = samplecomponent.to_reference().json
+        samplecomponent_id = samplecomponent["_id"]
     script:
         os.path.join(os.path.dirname(workflow.snakefile), "datadump.py")
+
 #- Templated section: end --------------------------------------------------------------------------
+
