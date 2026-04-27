@@ -130,7 +130,7 @@ rule run_seqsero2:
         output_prefix = f"{component['name']}"
     threads: JOB_CPUS
     conda:
-        'bifrost_dev_seqsero2_v1.3.2'
+        f"bifrost_{os.environ["BIFROST_STAGE"]}_SeqSero"
     shell:
         r"""
         set -euo pipefail
