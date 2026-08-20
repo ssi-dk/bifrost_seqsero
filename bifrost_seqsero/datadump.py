@@ -12,7 +12,7 @@ def ensure_tool_category(samplecomponent, category_name: str) -> Category:
     if category is None:
         category = Category(value={
             "name": category_name,
-            "component": samplecomponent.component,
+            "component": {"id": samplecomponent["component"]["_id"], "name": samplecomponent["component"]["name"]},
             "summary": {
                 "serotype": "",
                 "antigenic_profile": "",
