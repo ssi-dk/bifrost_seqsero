@@ -41,12 +41,12 @@ requirements:
       contigs:
         summary:
           data:
+      assembly_check:
+        summary:
+          sufficient_assembly: pass
       species_detection:
         summary:
           species: Salmonella enterica
-  components:
-    analyzer:
-      status:
 #---------------------------------------------------------------------------------------------------
 
 #-DB Value changes (excluding component output)-----------------------------------------------------
